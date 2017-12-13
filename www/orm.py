@@ -108,10 +108,13 @@ class ModelMetaclass(type):
     """docstring for ModelMetaclass"""
 
     def __new__(cls, name, base, attrs):
+        # 排除model类本身
         if name == 'Model':
             return type.__new__(cls, name, base, attrs)
+        # 获取table名称
         tablename = attrs.get('__table__', None) or name
         logging.info('found model:%s(table:%s)' % (name, tablename))
+        # 获取field和主键名
         mappings = dict()
         fields = []
         primaryKey = None
@@ -121,13 +124,13 @@ class ModelMetaclass(type):
                 mappings[k] = v
                 if v.primary_key:
                     if primaryKey:
-                        raise Exception(
+                        raise RuntimeError(
                             'Duplicate primary key for field：%s' % k)
                     primary_key = k
                 else:
                     fields.append(k)
         if not primaryKey:
-            raise Exception('primary key not found.')
+            raise RuntimeError('primary key not found.')
         for k in mappings.keys():
             attrs.pop(k)
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
@@ -175,3 +178,10 @@ class Model(dict, metaclass=ModelMetaclass):
                               (key, str(value)))
                 setattr(self, key, value)
         return value
+
+    async def save(self):
+        args = list(map(self.getValueOrDefault, self.__fields__))
+        args.append(self.getValueOrDefault(self.__primary_key__))
+        rows = await execute(self.__insert__, args)
+        if rows != 1:
+            logging.warn('failed to insert record: affected rows: %s' % rows)
