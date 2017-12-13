@@ -121,13 +121,13 @@ class ModelMetaclass(type):
                 mappings[k] = v
                 if v.primary_key:
                     if primaryKey:
-                        raise StandardError(
+                        raise Exception(
                             'Duplicate primary key for field：%s' % k)
                     primary_key = k
                 else:
                     fields.append(k)
         if not primaryKey:
-            raise StandardError('primary key not found.')
+            raise Exception('primary key not found.')
         for k in mappings.keys():
             attrs.pop(k)
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
