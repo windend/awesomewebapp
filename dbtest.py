@@ -27,6 +27,7 @@
 
 # session.close()
 
+<<<<<<< HEAD
 def countdown(n):
     print("countdown:", n)
     while n >= 0:
@@ -43,3 +44,18 @@ for x in c:
     if x == 5:
         c.send(3)
         c.send(2)
+=======
+import orm
+from models import User, Blogs, Comment
+
+
+def test():
+    yield from orm.create_pool(user='root', password='123456', database='awesome')
+
+    u = User(name='test', email='test@test.com', password='11111', image='')
+
+    yield from u.save()
+
+for x in test():
+    pass
+>>>>>>> c8ac761d55c676de2ce6f5bdc2fecdb503233ae4
