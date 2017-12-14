@@ -32,7 +32,7 @@ async def select(sql, args, size=None):
     global __pool
     async with(await __pool) as conn:
         cur = await conn.cursor(aiomysql.DictCursor)
-        await cur.excute(sql.replace('?', '%s'), args or())
+        await cur.execute(sql.replace('?', '%s'), args or())
         if siz:
             rs = await cur.fetchmany(size)
         else:
@@ -42,12 +42,12 @@ async def select(sql, args, size=None):
         return rs
 
 
-async def excute(sql, args):
+async def execute(sql, args):
     log(sql)
     async with (await __pool) as conn:
         try:
             cur = await conn.cursor()
-            await cur.excute(sql.replace('?', '%s'), args)
+            await cur.execute(sql.replace('?', '%s'), args)
             affected = cur.rowcount
             await cur.close()
         except Exception as e:
@@ -136,7 +136,7 @@ class ModelMetaclass(type):
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
         attrs['__mappings__'] = mappings
         attrs['__table__'] = tablename
-        attrs['__primari_key__'] = primaryKey
+        attrs['__primary_key__'] = primaryKey
         attrs['__fields__'] = fields
         attrs['__select__'] = 'select `%s`,%s from `%s`' % (
             primary_key, ', '.join(escaped_fields), tablename)
