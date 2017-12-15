@@ -6,7 +6,7 @@ from orm import Model, StringField, BooleanField, FloatField, TextField
 
 
 def next_id():
-    return '%015d%000' % (int(time.time() * 1000), uuid.uuid4().hex)
+    return '%015d%s000' % (int(time.time() * 1000), uuid.uuid4().hex)
 
 
 class User(Model):
@@ -45,13 +45,13 @@ class Comment(Model):
     created_at = FloatField(default=time.time)
 
 
-async def test():
-    await orm.create_pool(loop, user='root', password='123456', db='awesome')
-    u = User(name='test', email='test@test.com',
-             password='11111', image='about:blank')
-    await u.save()
-    # await orm.destroy_pool()
+# async def test():
+#     await orm.create_pool(loop, user='root', password='123456', db='awesome')
+#     u = User(name='test', email='test@test.com',
+#              password='11111', image='about:blank')
+#     await u.save()
+#     # await orm.destroy_pool()
 
 
-for x in test():
-    pass
+# for x in test():
+#     pass

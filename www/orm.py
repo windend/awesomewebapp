@@ -51,7 +51,7 @@ async def select(sql, args, size=None):
 
 async def execute(sql, args):
     log(sql)
-    async with (await __pool) as conn:
+    with (await __pool) as conn:
         try:
             cur = await conn.cursor()
             await cur.execute(sql.replace('?', '%s'), args)
@@ -141,11 +141,7 @@ class ModelMetaclass(type):
             attrs.pop(k)
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
         attrs['__mappings__'] = mappings
-<<<<<<< HEAD
         attrs['__table__'] = tableName
-=======
-        attrs['__table__'] = tablename
->>>>>>> a4850b9209e0e9288ce50ef8ff17f4a30138b806
         attrs['__primary_key__'] = primaryKey
         attrs['__fields__'] = fields
         attrs['__select__'] = 'select `%s`,%s from `%s`' % (
