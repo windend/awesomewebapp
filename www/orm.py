@@ -27,6 +27,13 @@ async def create_pool(loop, **kw):
     )
 
 
+async def destroy_pool():
+    global __pool
+    if pool is not None:
+        pool.close()
+        await pool.wait_closed()
+
+
 async def select(sql, args, size=None):
     log(sql, args)
     global __pool
@@ -106,14 +113,13 @@ class TextField(Field):
 
 class ModelMetaclass(type):
     """docstring for ModelMetaclass"""
-
     def __new__(cls, name, base, attrs):
         # 排除model类本身
         if name == 'Model':
             return type.__new__(cls, name, base, attrs)
         # 获取table名称
-        tablename = attrs.get('__table__', None) or name
-        logging.info('found model:%s(table:%s)' % (name, tablename))
+        tableName = attrs.get('__table__', None) or name
+        logging.info('found model: %s (table: %s)' % (name, tableName))
         # 获取field和主键名
         mappings = dict()
         fields = []
@@ -126,7 +132,7 @@ class ModelMetaclass(type):
                     if primaryKey:
                         raise RuntimeError(
                             'Duplicate primary key for field：%s' % k)
-                    primary_key = k
+                    primaryKey = k
                 else:
                     fields.append(k)
         if not primaryKey:
@@ -135,17 +141,17 @@ class ModelMetaclass(type):
             attrs.pop(k)
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
         attrs['__mappings__'] = mappings
-        attrs['__table__'] = tablename
-        attrs['__primari_key__'] = primaryKey
+        attrs['__table__'] = tableName
+        attrs['__primary_key__'] = primaryKey
         attrs['__fields__'] = fields
         attrs['__select__'] = 'select `%s`,%s from `%s`' % (
-            primary_key, ', '.join(escaped_fields), tablename)
-        attrs['__insert__'] = 'insert into `%s` (%s,`%s`) value (%s)' % (tablename, ', '.join(
+            primaryKey, ', '.join(escaped_fields), tableName)
+        attrs['__insert__'] = 'insert into `%s` (%s,`%s`) value (%s)' % (tableName, ', '.join(
             escaped_fields), primaryKey, create_args_string(len(escaped_fields)))
-        attrs['__update__'] = 'update `%s` set %s where `%s`=?' % (tablename, ', '.join(
+        attrs['__update__'] = 'update `%s` set %s where `%s`=?' % (tableName, ', '.join(
             map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)), primaryKey)
         attrs['__delete__'] = 'delete from `%s` where `%s`=?' % (
-            tablename, primaryKey)
+            tableName, primaryKey)
         return type.__new__(cls, name, base, attrs)
 
 
